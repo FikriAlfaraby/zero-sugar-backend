@@ -28,7 +28,14 @@ const User = {
         "INSERT INTO users (email, username, password, roles, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
       binds: [email, username, password, roles, is_active],
       complete: (err, stmt) => {
-        callback(err, stmt);
+        if (err) {
+          console.error(
+            "Failed to execute statement due to the following error: " +
+              err.message
+          );
+        } else {
+          console.log("Successfully executed statement: " + stmt.getSqlText());
+        }
       },
     });
   },
