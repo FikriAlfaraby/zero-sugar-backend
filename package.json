@@ -4,7 +4,7 @@
   "main": "api/index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "build": "echo 'ready for deployment'"
+    "start": "node api/index.js"
   },
   "keywords": [],
   "author": "",
