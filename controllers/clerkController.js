@@ -1,4 +1,9 @@
 const userModel = require("../models/userModel");
+const Clerk = require("@clerk/express");
+
+const clerkClient = Clerk.createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
 
 exports.handleWebhook = async (req, res) => {
   const { type, data } = req.body;
@@ -6,28 +11,40 @@ exports.handleWebhook = async (req, res) => {
   try {
     switch (type) {
       case "user.created":
-        await userModel.createUser({
-          email: data.email_addresses[0]?.email_address,
-          username: data.username
-            ? data.username
-            : `${data.first_name} ${data.last_name}`,
-          password: "",
-          roles: "user",
-          is_active: true,
-        });
+        userModel.createUser(
+          {
+            email: data.email_addresses[0]?.email_address,
+            username: data.username
+              ? data.username
+              : `${data.first_name} ${data.last_name}`,
+            password: "",
+            roles: "user",
+            is_active: true,
+          },
+          async (err, newUser) => {
+            if (err) {
+              console.log(err);
+            }
+            try {
+              const userClerkUpdate = await clerkClient.users.updateUser(
+                data.id,
+                {
+                  publicMetadata: { id_user: newUser._ID },
+                }
+              );
+              console.log("User updated in Clerk:", userClerkUpdate);
+            } catch (error) {
+              console.error("Error updating user in Clerk:", error);
+            }
+          }
+        );
         break;
 
       case "user.updated":
-        await userModel.updateUser(data.id, {
-          email: data.email_addresses[0]?.email_address,
-          username: data.username,
-          roles: data.public_metadata?.roles || "user",
-          is_active: data.status === "active",
-        });
+        console.log("webhook update clerk");
         break;
 
       case "user.deleted":
-        await userModel.deleteUser(data.id);
         break;
 
       case "email.created":
