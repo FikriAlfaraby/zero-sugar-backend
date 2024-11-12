@@ -25,19 +25,26 @@ const User = {
     const { email, username, password, roles, is_active } = userData;
 
     if (!email) {
-      callback("Error Email Not Found!", null);
-      return;
+      const error = new Error("Error: Email Not Found!");
+      if (callback) {
+        callback(error, null);
+        return;
+      }
+      return Promise.reject(error);
     }
 
-    db.execute({
-      sqlText:
-        "INSERT INTO users (email, username, password, roles, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-      binds: [email, username, password, roles, is_active],
-      complete: (err, stmt, rows) => {
-        if (err) {
-          console.error("Failed to execute statement: " + err.message);
-          callback(err, null);
-        } else {
+    return new Promise((resolve, reject) => {
+      db.execute({
+        sqlText:
+          "INSERT INTO users (email, username, password, roles, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        binds: [email, username, password, roles, is_active],
+        complete: (err, stmt, rows) => {
+          if (err) {
+            console.error("Failed to execute statement:", err.message);
+            if (callback) callback(err, null);
+            return reject(err);
+          }
+
           console.log("Insert statement executed successfully");
           db.execute({
             sqlText:
@@ -45,17 +52,20 @@ const User = {
             binds: [email],
             complete: (err, stmt, rows) => {
               if (err) {
-                callback(err, null);
-                return;
-              } else {
-                const newUser = rows[0];
+                if (callback) callback(err, null);
+                return reject(err);
+              }
+
+              const newUser = rows[0];
+              if (callback) {
                 callback(null, newUser);
-                return;
+              } else {
+                resolve(newUser);
               }
             },
           });
-        }
-      },
+        },
+      });
     });
   },
 

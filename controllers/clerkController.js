@@ -5,41 +5,31 @@ const clerkClient = Clerk.createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-console.log(process.env.CLERK_SECRET_KEY + "clerk controller");
-
 exports.handleWebhook = async (req, res) => {
   const { type, data } = req.body;
 
   try {
     switch (type) {
       case "user.created":
-        userModel.createUser(
-          {
+        try {
+          const newUser = await userModel.createUser({
             email: data.email_addresses[0]?.email_address,
-            username: data.username
-              ? data.username
-              : `${data.first_name} ${data.last_name}`,
+            username: data.username || `${data.first_name} ${data.last_name}`,
             password: "",
             roles: "user",
             is_active: true,
-          },
-          async (err, newUser) => {
-            if (err) {
-              console.log(err);
-            }
-            try {
-              const userClerkUpdate = await clerkClient.users.updateUser(
-                data.id,
-                {
-                  publicMetadata: { id_user: newUser._ID },
-                }
-              );
-              console.log("User updated in Clerk:", userClerkUpdate);
-            } catch (error) {
-              console.error("Error updating user in Clerk:", error);
-            }
-          }
-        );
+          });
+
+          console.log(newUser._ID);
+
+          const userClerkUpdate = await clerkClient.users.updateUser(data.id, {
+            publicMetadata: { id_user: newUser._ID },
+          });
+
+          console.log("User updated in Clerk:", userClerkUpdate);
+        } catch (error) {
+          console.error("Error in user creation or update process:", error);
+        }
         break;
 
       case "user.updated":
