@@ -5,7 +5,7 @@ const clerkClient = Clerk.createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-console.log(clerkClient);
+console.log(process.env.CLERK_SECRET_KEY);
 
 exports.handleWebhook = async (req, res) => {
   const { type, data } = req.body;
