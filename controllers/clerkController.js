@@ -20,8 +20,6 @@ exports.handleWebhook = async (req, res) => {
             is_active: true,
           });
 
-          console.log(newUser._ID);
-
           const userClerkUpdate = await clerkClient.users.updateUser(data.id, {
             publicMetadata: { id_user: newUser._ID },
           });
