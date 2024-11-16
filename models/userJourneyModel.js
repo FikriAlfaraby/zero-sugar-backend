@@ -69,8 +69,8 @@ const UserJourney = {
 
   createUserJourney: (idUser, data, cb) => {
     // Ambil waktu sekarang dan konversi ke zona waktu Asia/Jakarta (GMT+7)
-    const dateInGMT7 = moment()
-      .tz("Asia/Jakarta")
+    const dateInGMT7 = moment
+      .tz("2024-12-15 00:00:00", "Asia/Jakarta")
       .format("YYYY-MM-DD HH:mm:ss");
 
     // Cek apakah sudah ada journey dengan tanggal yang sama
