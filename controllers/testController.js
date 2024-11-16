@@ -3,7 +3,7 @@ const db = require("../config/database");
 exports.test = (req, res) => {
   db.execute({
     sqlText: "DELETE FROM user_journey WHERE ID_JOURNEY = ?",
-    binds: [601],
+    binds: [777],
     complete: (err, stmt) => {
       if (err) {
         console.log("Error deleting user profile: ", err);
